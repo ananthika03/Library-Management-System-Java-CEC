@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+        
+    <wb-module deploy-name="LibraryManagementSystemCEC">
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/" source-path="/src/main/webapp/WebContent"/>
+                
+        <property name="java-output-path" value="/LibraryManagementSystemCEC/build/classes"/>
+                
+        <property name="context-root" value="LibraryManagementSystemCEC"/>
+            
+    </wb-module>
+    
+</project-modules>

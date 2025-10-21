@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Management System</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: #f4f7fb;
+      color: #333;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, #04315f, #0055a5);
+      color: white;
+      padding: 15px 30px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.203);
+    }
+
+    .college-logo {
+      height: 50px;
+      margin-right: 15px;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    /* Navigation */
+    nav {
+      background: #0055a5;
+      margin-top: 75px;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      position: sticky;
+      top: 70px;
+      z-index: 999;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1rem;
+      position: relative;
+      transition: 0.3s ease;
+    }
+
+    nav a::after {
+      content: "";
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      background: white;
+      left: 0;
+      bottom: -5px;
+      transition: width 0.3s;
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    /* Main content */
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .welcome-card {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      max-width: 600px;
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .welcome-card h2 {
+      color: #04315f;
+      margin-bottom: 15px;
+      font-size: 1.6rem;
+    }
+
+    .welcome-card p {
+      font-size: 1rem;
+      color: #555;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer */
+    footer {
+      background: #04315f;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      font-size: 0.9rem;
+      margin-top: auto;
+    }
+
+    footer p {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="https://ceconline.edu/wp-content/uploads/2024/06/CEC-logo.png" 
+         alt="College of Engineering Chengannur Logo" class="college-logo">
+    <h1>Library Management System</h1>
+  </header>
+
+  <nav>
+    <a href="pages/login.html">Login</a>
+  </nav>
+
+  <main>
+    <div class="welcome-card">
+      <h2>📚 Welcome to the Library</h2>
+      <p>Manage books, members, and borrowing records easily with our modern system.  
+      Explore the features using the navigation above.</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Library Management System | College of Engineering Chengannur</p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+header {
+  background: #2c3e50;
+  color: #fff;
+  padding: 15px;
+  text-align: center;
+}
+
+nav a {
+  color: #fff;
+  margin: 0 10px;
+  text-decoration: none;
+}
+
+main {
+  padding: 20px;
+}
+
+footer {
+  background: #2c3e50;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+/* Login Page */
+.login-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(to right, #dff1ff, #c8e8f9);
+  font-family: Arial, sans-serif;
+}
+
+.login-container {
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  text-align: center;
+  width: 350px;
+}
+
+.login-container .title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #003366;
+}
+
+.login-container .subtitle {
+  font-size: 14px;
+  margin-bottom: 20px;
+  color: #444;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.login-form label {
+  margin: 8px 0 4px;
+  font-size: 14px;
+  color: #222;
+}
+
+.login-form input {
+  padding: 10px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.login-btn {
+  padding: 10px;
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.login-btn:hover {
+  background: #1a252f;
+}
+
+.forgot-link {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #0077cc;
+  text-decoration: none;
+  text-align: center;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+/* Dashboard Page */
+.dashboard-body {
+  display: flex;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  background: #c8e8f9;
+  padding: 20px;
+  min-width: 180px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 15px 0;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #222;
+  font-size: 15px;
+}
+
+.sidebar a:hover {
+  color: #003366;
+  font-weight: bold;
+}
+
+/* Dashboard main */
+.dashboard-main {
+  flex: 1;
+  padding: 20px;
+  background: #eaf6fd;
+}
+
+.dashboard-main h2 {
+  margin-bottom: 20px;
+  color: #003366;
+}
+
+/* Dashboard cards */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: #fff;
+  border: 2px solid #003366;
+  padding: 40px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.card:hover {
+  background: #cce7ff;
+  cursor: pointer;
+}
