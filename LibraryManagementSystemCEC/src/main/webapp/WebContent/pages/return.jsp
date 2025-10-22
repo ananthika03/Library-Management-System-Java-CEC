@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,26 +29,31 @@
     .btn-cancel { background: #e74c3c; color: white; }
     .fine-box { background: white; padding: 10px; border: 1px solid #ccc; border-radius: 6px; text-align: center; margin-top: 10px; font-weight: bold; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
     .fine-note { font-size: 13px; color: #555; margin-top: 6px; padding: 8px; background: #f9f9f9; border-left: 4px solid #3498db; border-radius: 4px; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    th, td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
+    th { background: #3498db; color: white; }
+    tr:hover { background: #f1f1f1; }
   </style>
 </head>
 <body>
 
   <aside class="sidebar">
     <ul>
-      <li><a href="book.html">📚 Books</a></li>
-      <li><a href="student.html">👩‍🎓 Students</a></li>
-      <li><a href="issue.html">📖 Issue Book</a></li>
-      <li><a href="return.html">🔄 Return Book</a></li>
-      <li><a href="report.html">📊 Reports</a></li>
-      <li><a href="login.html">🚪 Logout</a></li>
-      <li><a href="../index.html">🏠 Main Page</a></li>
+      <li><a href="books">Books</a></li>
+      <li><a href="students">Students</a></li>
+      <li><a href="issues">Issue Book</a></li>
+      <li><a href="returns">Return Book</a></li>
+      <li><a href="reports">Reports</a></li>
+      <li><a href="logout">Logout</a></li>
+      <li><a href="../index.html">Main Page</a></li>
     </ul>
   </aside>
 
   <main class="dashboard-main">
     <div class="card">
-      <h2>🔄 Return Book</h2>
-      <form id="returnForm" action="return" method="post">
+      <h2>Return Book</h2>
+      <form id="returnForm" action="returns" method="post">
   		<div class="form-group">
     	<label>Student ID</label>
     	<input type="number" id="studentId" name="studentId" required>
@@ -67,6 +73,30 @@
  			 <button type="reset" class="btn btn-cancel">Cancel</button>
 	  </form>
       
+      <h3 style="margin-top: 30px; color: #04315f;">Past Return History</h3>
+      <table id="returnTable" style="margin-top: 10px;">
+          <thead>
+              <tr>
+                  <th>Student ID</th>
+                  <th>Book ID</th>
+                  <th>Return Date</th>
+                  <th>Fine Paid</th>
+              </tr>
+          </thead>
+          <tbody>
+              <c:forEach var="returnRecord" items="${returnList}">
+                  <tr>
+                      <td><c:out value="${returnRecord.studentId}"/></td>
+                      <td><c:out value="${returnRecord.bookId}"/></td>
+                      <td><c:out value="${returnRecord.returnDate}"/></td>
+                      <td>₹<c:out value="${returnRecord.fine}"/></td>
+                  </tr>
+              </c:forEach>
+              <c:if test="${empty returnList}">
+                   <tr><td colspan="4">No return records found.</td></tr>
+              </c:if>
+          </tbody>
+      </table>
     </div>
   </main>
 
@@ -77,16 +107,10 @@
 
     form.addEventListener("submit", function(e){
       const returnDate = new Date(document.getElementById("returnDate").value);
-      const issueId = parseInt(document.getElementById("issueId").value);
-
-      if (!returnDate || !issueId) return; // safety check
-
-      // Get due date from database? For now, you can assume a placeholder
-      const dueDate = new Date(); // replace with real due date if fetched
-      // If you have the actual dueDate field in form, use that instead
-      // const dueDate = new Date(document.getElementById("dueDate").value);
-
+      // NOTE: You must implement server-side logic to fetch the correct DUE DATE 
+      const dueDate = new Date(); 
       let fine = 0;
+      
       if (returnDate > dueDate) {
         const diff = Math.ceil((returnDate - dueDate) / (1000 * 60 * 60 * 24));
         fine = diff * 10;

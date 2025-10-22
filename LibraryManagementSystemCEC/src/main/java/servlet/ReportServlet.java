@@ -1,17 +1,33 @@
+// File: src/main/java/servlet/ReportServlet.java
 package servlet;
 
 import dao.ReportDAO;
-
 import model.Report;
-
-import javax.servlet.*;
+import java.time.LocalDate;
+import java.util.List;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
-import java.time.LocalDate;
 
+@WebServlet("/reports")
 public class ReportServlet extends HttpServlet {
 
-    private static final long serialVersionUID = 5276892633421698997L;
+    private static final long serialVersionUID = 1L;
+    
+    // ✅ ADDED: Handles GET request to fetch data and display the JSP
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        ReportDAO dao = new ReportDAO();
+        List<Report> reports = dao.getAllReports();
+        
+        request.setAttribute("reportList", reports);
+        
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WebContent/pages/report.jsp");
+        dispatcher.forward(request, response);
+    }
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -34,6 +50,6 @@ public class ReportServlet extends HttpServlet {
         ReportDAO dao = new ReportDAO();
         dao.addReport(r);
 
-        response.sendRedirect("report.html");
+        response.sendRedirect("reports"); // Redirects to doGet
     }
 }

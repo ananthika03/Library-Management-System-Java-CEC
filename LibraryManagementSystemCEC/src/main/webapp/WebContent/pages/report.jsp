@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,13 +25,7 @@
     }
     .sidebar ul { list-style: none; padding: 0; }
     .sidebar li { margin: 15px 0; }
-    .sidebar a {
-      text-decoration: none;
-      color: white;
-      display: block;
-      padding: 10px 20px;
-      transition: background 0.3s;
-    }
+    .sidebar a { text-decoration: none; color: white; display: block; padding: 10px 20px; transition: background 0.3s; }
     .sidebar a:hover { background: #34495e; border-radius: 6px; }
 
     /* Main */
@@ -67,15 +62,7 @@
     .btn-cancel { background: #e74c3c; color: white; }
 
     /* Table */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     th, td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
     th { background: #3498db; color: white; }
     tr:hover { background: #f1f1f1; }
@@ -85,33 +72,29 @@
 </head>
 <body>
 
-  <!-- Sidebar -->
   <aside class="sidebar">
     <ul>
-      <li><a href="book.html">📚 Books</a></li>
-      <li><a href="student.html">👩‍🎓 Students</a></li>
-      <li><a href="issue.html">📖 Issue Book</a></li>
-      <li><a href="return.html">🔄 Return Book</a></li>
-      <li><a href="report.html">📊 Reports</a></li>
-      <li><a href="login.html">🚪 Logout</a></li>
-      <li><a href="../index.html">🏠 Main Page</a></li>
+      <li><a href="books">Books</a></li>
+      <li><a href="students">Students</a></li>
+      <li><a href="issues">Issue Book</a></li>
+      <li><a href="returns">Return Book</a></li>
+      <li><a href="reports">Reports</a></li>
+      <li><a href="logout">Logout</a></li>
+      <li><a href="../index.html">Main Page</a></li>
     </ul>
   </aside>
 
-  <!-- Main -->
   <main class="dashboard-main">
     <div class="card">
-      <h2>📊 Reports</h2>
+      <h2>Reports</h2>
 
-      <!-- Summary Stats -->
       <div class="stats">
         <div class="stat-box" id="booksIssued">Books Issued: 0</div>
         <div class="stat-box" id="returnsToday">Returns Today: 0</div>
         <div class="stat-box" id="overdue">Overdue: 0</div>
       </div>
 
-      <!-- Admin Entry Form -->
-      <form id="reportForm" action="report" method="post">
+      <form id="reportForm" action="reports" method="post">
         <div class="form-group">
           <label>Student ID</label>
           <input type="text" id="studentId" name="studentId" required>
@@ -143,10 +126,10 @@
         <button type="reset" class="btn btn-cancel">Clear</button>
       </form>
 
-      <!-- Report Table -->
       <table id="reportTable">
         <thead>
           <tr>
+            <th>Report ID</th>
             <th>Student ID</th>
             <th>Book ID</th>
             <th>Issue Date</th>
@@ -155,55 +138,66 @@
             <th>Status</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+           <c:forEach var="report" items="${reportList}">
+                <tr>
+                    <td><c:out value="${report.reportId}"/></td>
+                    <td><c:out value="${report.studentId}"/></td>
+                    <td><c:out value="${report.bookId}"/></td>
+                    <td><c:out value="${report.issueDate}"/></td>
+                    <td><c:out value="${report.dueDate}"/></td>
+                    <td>₹<c:out value="${report.fine}"/></td>
+                    <td>
+                        <c:choose>
+                            <c:when test="${report.status eq 'Returned'}">
+                                <span class="status-returned">Returned</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="status-overdue"><c:out value="${report.status}"/></span>
+                            </c:otherwise>
+                        </c:choose>
+                    </td>
+                </tr>
+            </c:forEach>
+             <c:if test="${empty reportList}">
+                 <tr><td colspan="7">No report records found.</td></tr>
+             </c:if>
+        </tbody>
       </table>
     </div>
   </main>
 
   <script>
-    const form = document.getElementById("reportForm");
     const tableBody = document.querySelector("#reportTable tbody");
     const booksIssuedBox = document.getElementById("booksIssued");
     const returnsTodayBox = document.getElementById("returnsToday");
     const overdueBox = document.getElementById("overdue");
 
-    let booksIssued = 0;
-    let returnsToday = 0;
-    let overdueCount = 0;
+    function updateStats() {
+      let booksIssued = 0;
+      let returnsToday = 0;
+      let overdueCount = 0;
+      
+      const rows = tableBody.querySelectorAll("tr");
+      rows.forEach(row => {
+        if(row.cells.length < 7) return; 
+        
+        booksIssued++;
+        const statusText = row.cells[6].textContent.trim();
+        
+        if (statusText === "Returned") {
+          returnsToday++;
+        } else if (statusText === "Overdue") {
+          overdueCount++;
+        }
+      });
 
-    form.addEventListener("submit", function(e) {
-      // keep table update, do not prevent form submission
-      const studentId = document.getElementById("studentId").value;
-      const bookId = document.getElementById("bookId").value;
-      const issueDate = document.getElementById("issueDate").value;
-      const dueDate = document.getElementById("dueDate").value;
-      const fine = document.getElementById("fine").value;
-      const status = document.getElementById("status").value;
-
-      // Add row to table dynamically
-      const row = tableBody.insertRow();
-      row.insertCell(0).textContent = studentId;
-      row.insertCell(1).textContent = bookId;
-      row.insertCell(2).textContent = issueDate;
-      row.insertCell(3).textContent = dueDate;
-      row.insertCell(4).textContent = fine + "/-";
-
-      const statusCell = row.insertCell(5);
-      if (status === "Returned") {
-        statusCell.innerHTML = '<span class="status-returned">Returned</span>';
-        returnsToday++;
-      } else {
-        statusCell.innerHTML = '<span class="status-overdue">Overdue</span>';
-        overdueCount++;
-      }
-
-      booksIssued++;
-
-      // Update stats
       booksIssuedBox.textContent = "Books Issued: " + booksIssued;
-      returnsTodayBox.textContent = "Returns Today: " + returnsToday;
+      returnsTodayBox.textContent = "Returns Today: " + returnsToday; 
       overdueBox.textContent = "Overdue: " + overdueCount;
-    });
+    }
+    
+    window.onload = updateStats;
   </script>
 
 </body>

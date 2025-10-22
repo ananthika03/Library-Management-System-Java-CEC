@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,14 +15,7 @@
     }
 
     /* Sidebar */
-    .sidebar {
-      width: 210px;
-      background: #30465d;
-      color: white;
-      min-height: 100vh;
-      padding-top: 20px;
-      position: fixed;
-    }
+    .sidebar { width: 210px; background: #30465d; color: white; min-height: 100vh; padding-top: 20px; position: fixed; }
     .sidebar ul { list-style: none; padding: 0; }
     .sidebar li { margin: 15px 0; }
     .sidebar a { text-decoration: none; color: white; display: block; padding: 10px 20px; transition: background 0.3s; }
@@ -64,24 +58,22 @@
 </head>
 <body>
 
-  <!-- Sidebar -->
   <aside class="sidebar">
     <ul>
-      <li><a href="book.html">📚 Books</a></li>
-      <li><a href="student.html">👩‍🎓 Students</a></li>
-      <li><a href="issue.html">📖 Issue Book</a></li>
-      <li><a href="return.html">🔄 Return Book</a></li>
-      <li><a href="report.html">📊 Reports</a></li>
-      <li><a href="logout">🚪 Logout</a></li>
-      <li><a href="../index.html">🏠 Main Page</a></li>
+      <li><a href="books">Books</a></li>
+      <li><a href="students">Students</a></li>
+      <li><a href="issues">Issue Book</a></li>
+      <li><a href="returns">Return Book</a></li>
+      <li><a href="reports">Reports</a></li>
+      <li><a href="logout">Logout</a></li>
+      <li><a href="../index.html">Main Page</a></li>
     </ul>
   </aside>
 
-  <!-- Main -->
   <main class="dashboard-main">
     <div class="card">
-      <h2>📖 Issue Book</h2>
-      <form id="issueForm" action="issue" method="post">
+      <h2>Issue Book</h2>
+      <form id="issueForm" action="issues" method="post">
         <div class="form-group">
           <label>Student ID</label>
           <input type="number" name="studentId" placeholder="Enter Student ID" required>
@@ -104,58 +96,48 @@
     </div>
 
     <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="🔍 Search issued books...">
+      <input type="text" id="searchInput" placeholder="Search issued books...">
     </div>
 
     <table id="issuedTable">
       <thead>
         <tr>
+          <th>Issue ID</th>
           <th>Student ID</th>
           <th>Book ID</th>
           <th>Issue Date</th>
-          <th>Return Date</th>
+          <th>Due Date</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Rows populated from DB via servlet/JSP if needed -->
+        <c:forEach var="issue" items="${issueList}">
+            <tr>
+                <td><c:out value="${issue.issueId}"/></td>
+                <td><c:out value="${issue.studentId}"/></td>
+                <td><c:out value="${issue.bookId}"/></td>
+                <td><c:out value="${issue.issueDate}"/></td>
+                <td><c:out value="${issue.dueDate}"/></td>
+                <td><button class="deleteBtn">Delete</button></td>
+            </tr>
+        </c:forEach>
+        <c:if test="${empty issueList}">
+             <tr><td colspan="6">No books currently issued.</td></tr>
+        </c:if>
       </tbody>
     </table>
   </main>
 
   <script>
-    // Client-side live table only
-    const issueForm = document.getElementById('issueForm');
     const issuedTable = document.getElementById('issuedTable').querySelector('tbody');
     const searchInput = document.getElementById('searchInput');
 
-    issueForm.addEventListener('submit', function(e){
-      // optional: live table preview without reloading
-      const studentId = this.studentId.value;
-      const bookId = this.bookId.value;
-      const issueDate = this.issueDate.value;
-      const dueDate = this.dueDate.value;
-
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${studentId}</td>
-        <td>${bookId}</td>
-        <td>${issueDate}</td>
-        <td>${dueDate}</td>
-        <td><button class="deleteBtn">🗑 Delete</button></td>
-      `;
-      issuedTable.appendChild(row);
-
-      row.querySelector('.deleteBtn').addEventListener('click', () => row.remove());
-    });
-
-    // Search filter
     searchInput.addEventListener('input', function(){
       const val = this.value.toLowerCase();
       issuedTable.querySelectorAll('tr').forEach(row=>{
-        const student = row.cells[0].textContent.toLowerCase();
-        const book = row.cells[1].textContent.toLowerCase();
-        row.style.display = (student.includes(val) || book.includes(val)) ? '' : 'none';
+        const studentId = row.cells[1]?.textContent.toLowerCase() || '';
+        const bookId = row.cells[2]?.textContent.toLowerCase() || '';
+        row.style.display = (studentId.includes(val) || bookId.includes(val)) ? '' : 'none';
       });
     });
   </script>

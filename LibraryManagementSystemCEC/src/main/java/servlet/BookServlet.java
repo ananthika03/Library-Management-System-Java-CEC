@@ -1,23 +1,51 @@
+// File: src/main/java/servlet/BookServlet.java
 package servlet;
 
 import dao.BookDAO;
 import model.Book;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet("/books")
 public class BookServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    // ✅ ADDED: Handles GET request to fetch data and display the JSP
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        BookDAO dao = new BookDAO();
+        List<Book> books = dao.getAllBooks();
+        request.setAttribute("bookList", books);
+        
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WebContent/pages/book.jsp");
+        dispatcher.forward(request, response);
+    }
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
+        BookDAO dao = new BookDAO();
+        String action = request.getParameter("action");
 
+        // 1. Handle Delete Action
+        if ("delete".equals(action)) {
+            try {
+                int bookId = Integer.parseInt(request.getParameter("bookId"));
+                dao.deleteBook(bookId);
+            } catch (NumberFormatException ignored) {}
+            response.sendRedirect("books"); // Redirects to doGet
+            return;
+        }
+
+        // 2. Handle Add Book Action
         String title = request.getParameter("title");
         String author = request.getParameter("author");
         String publisher = request.getParameter("publisher");
@@ -28,7 +56,8 @@ public class BookServlet extends HttpServlet {
             year = Integer.parseInt(request.getParameter("year"));
             availableCopies = Integer.parseInt(request.getParameter("availableCopies"));
         } catch (NumberFormatException e) {
-            response.getWriter().println("Year and Available Copies must be numbers!");
+            request.setAttribute("errorMessage", "Year and Available Copies must be numbers!");
+            doGet(request, response);
             return;
         }
 
@@ -39,16 +68,8 @@ public class BookServlet extends HttpServlet {
         b.setYear(year);
         b.setAvailableCopies(availableCopies);
 
-        BookDAO dao = new BookDAO();
-        boolean success = dao.addBook(b);
+        dao.addBook(b);
 
-        response.setContentType("text/html; charset=UTF-8");
-        if (success) {
-            response.getWriter().println("<h3>Book added successfully!</h3>");
-            response.getWriter().println("<a href='book.html'>Add Another Book</a>");
-        } else {
-            response.getWriter().println("<h3>Error: Could not add book. Check server logs.</h3>");
-            response.getWriter().println("<a href='book.html'>Try Again</a>");
-        }
+        response.sendRedirect("books"); // Redirects to doGet
     }
 }

@@ -72,11 +72,24 @@
     <h3>COLLEGE OF ENGINEERING CHENGANNUR</h3>
     <h2 class="login-title">Login</h2>
 
-    <!-- ✅ Corrected form: submits to LoginServlet -->
-    <form action="login" method="post" class="login-form">
-      <!-- Show error if invalid -->
-     
 
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      let errorMessage = '';
+
+      if (error === 'invalid') {
+        errorMessage = 'Invalid ID or Password. Please try again.';
+      } else if (error === 'unauthorized') {
+        errorMessage = 'Session expired or unauthorized access. Please log in.';
+      }
+
+      if (errorMessage) {
+        document.write('<p class="error">' + errorMessage + '</p>');
+      }
+    </script>
+    
+    <form action="../login" method="post" class="login-form">
       <label for="userid">College ID / Staff ID</label>
       <input type="text" id="userid" name="userid" placeholder="Enter your ID" required>
 

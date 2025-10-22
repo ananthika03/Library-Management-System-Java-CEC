@@ -1,3 +1,4 @@
+// File: src/main/java/servlet/AuthFilter.java
 package servlet;
 
 import javax.servlet.*;
@@ -14,12 +15,16 @@ public class AuthFilter implements Filter {
 
         HttpSession session = req.getSession(false);
 
+        // Check if the user is logged in
         if (session != null && session.getAttribute("adminUserId") != null) {
             // User is logged in, allow access
             chain.doFilter(request, response);
         } else {
             // Not logged in, redirect to login page
-            res.sendRedirect("login.html?error=unauthorized");
+            // ✅ CHANGE: Send the error to the correct static login page path
+            res.sendRedirect("pages/login.html?error=unauthorized"); 
         }
     }
+    
+    // init() and destroy() methods are typically empty but required by the Filter interface.
 }

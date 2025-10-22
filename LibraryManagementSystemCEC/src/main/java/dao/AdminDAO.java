@@ -1,29 +1,37 @@
+// File: src/main/java/dao/AdminDAO.java
 package dao;
 
 import model.Admin;
+import util.PasswordUtil; 
 import java.sql.*;
 
 public class AdminDAO {
 
-    // Validate login using userid + password
     public boolean validate(String userid, String password) {
-        String sql = "SELECT * FROM admins WHERE userid=? AND password=?";
+        String storedPasswordHash = null;
+        // 1. Select ONLY the password hash from the database using the userid
+        String sql = "SELECT password FROM admins WHERE userid=?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, userid);
-            ps.setString(2, password);
 
             ResultSet rs = ps.executeQuery();
-            return rs.next(); // true only if matching record exists
+            if (rs.next()) {
+                // Get the stored hash
+                storedPasswordHash = rs.getString("password");
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
+        
+        // 2. Use PasswordUtil to securely compare the plaintext password with the hash
+        return storedPasswordHash != null && PasswordUtil.verifyPassword(password, storedPasswordHash);
     }
 
-    // Get admin details by Staff ID
+    // Get admin details by Staff ID (Used by the validate method to retrieve the hash)
     public Admin getAdminByUserId(String userid) {
         String sql = "SELECT * FROM admins WHERE userid=?";
         try (Connection conn = DBConnection.getConnection();
