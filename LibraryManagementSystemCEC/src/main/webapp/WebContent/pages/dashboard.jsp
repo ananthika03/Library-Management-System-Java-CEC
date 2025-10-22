@@ -63,12 +63,12 @@
   
   <aside class="sidebar">
     <ul>
-      <li><a href="books">Books</a></li>
-      <li><a href="students">Students</a></li>
-      <li><a href="issues">Issue Book</a></li>
-      <li><a href="returns">Return Book</a></li>
-      <li><a href="reports">Reports</a></li>
-      <li><a href="logout">Logout</a></li>
+      <li><a href="../books">Books</a></li>
+      <li><a href="../students">Students</a></li>
+      <li><a href="../issues">Issue Book</a></li>
+      <li><a href="../returns">Return Book</a></li>
+      <li><a href="../reports">Reports</a></li>
+      <li><a href="../logout">Logout</a></li>
       <li><a href="../index.html">Main Page</a></li>
     </ul>
   </aside>

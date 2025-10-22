@@ -25,7 +25,7 @@ public class StudentServlet extends HttpServlet {
         
         request.setAttribute("studentList", students); 
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WebContent/pages/student.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/pages/student.jsp");
         dispatcher.forward(request, response);
     }
 

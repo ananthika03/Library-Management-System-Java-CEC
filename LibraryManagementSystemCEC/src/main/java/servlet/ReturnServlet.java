@@ -25,7 +25,7 @@ public class ReturnServlet extends HttpServlet {
         
         request.setAttribute("returnList", returns);
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WebContent/pages/return.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/pages/return.jsp");
         dispatcher.forward(request, response);
     }
 

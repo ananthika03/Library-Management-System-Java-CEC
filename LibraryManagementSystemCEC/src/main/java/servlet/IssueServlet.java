@@ -26,7 +26,7 @@ public class IssueServlet extends HttpServlet {
         request.setAttribute("issueList", issues);
         
         // Forward to the JSP page
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WebContent/pages/issue.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/pages/issue.jsp");
         dispatcher.forward(request, response);
     }
     

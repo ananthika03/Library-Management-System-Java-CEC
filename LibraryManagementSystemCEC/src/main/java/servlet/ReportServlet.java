@@ -25,7 +25,7 @@ public class ReportServlet extends HttpServlet {
         
         request.setAttribute("reportList", reports);
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WebContent/pages/report.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/pages/report.jsp");
         dispatcher.forward(request, response);
     }
 
