@@ -1,4 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page isELIgnored="false" %>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,10 +83,10 @@
     </div>
     
     <div class="dashboard-cards">
-      <div class="card" onclick="window.location.href=""../books">Manage Books</div>
-      <div class="card" onclick="window.location.href="../students">Manage Students</div>
-      <div class="card" onclick="window.location.href="../issues">Issue Books</div>
-      <div class="card" onclick="window.location.href="../returns">Process Returns</div>
+      <div class="card" onclick="window.location.href='${pageContext.request.contextPath}/books'">Manage Books</div>
+      <div class="card" onclick="window.location.href='${pageContext.request.contextPath}/students'">Manage Students</div>
+      <div class="card" onclick="window.location.href='${pageContext.request.contextPath}/issues'">Issue Books</div>
+      <div class="card" onclick="window.location.href='${pageContext.request.contextPath}/returns'">Process Returns</div>
     </div>
   </main>
 </body>
