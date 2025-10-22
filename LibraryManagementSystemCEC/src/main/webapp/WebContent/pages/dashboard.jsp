@@ -60,7 +60,6 @@
   </style>
 </head>
 <body>
-  
   <aside class="sidebar">
     <ul>
       <li><a href="../books">Books</a></li>
@@ -81,10 +80,10 @@
     </div>
     
     <div class="dashboard-cards">
-      <div class="card" onclick="window.location.href='books'">Manage Books</div>
-      <div class="card" onclick="window.location.href='students'">Manage Students</div>
-      <div class="card" onclick="window.location.href='issues'">Issue Books</div>
-      <div class="card" onclick="window.location.href='returns'">Process Returns</div>
+      <div class="card" onclick="window.location.href=""../books">Manage Books</div>
+      <div class="card" onclick="window.location.href="../students">Manage Students</div>
+      <div class="card" onclick="window.location.href="../issues">Issue Books</div>
+      <div class="card" onclick="window.location.href="../returns">Process Returns</div>
     </div>
   </main>
 </body>
