@@ -71,7 +71,7 @@
       <li><a href="../returns">Return Book</a></li>
       <li><a href="../reports">Reports</a></li>
       <li><a href="../logout">Logout</a></li>
-      <li><a href="../index.html">Main Page</a></li>
+      <li><a href="index.html">Main Page</a></li>
     </ul>
   </aside>
 
