@@ -24,7 +24,7 @@ public class BookServlet extends HttpServlet {
         List<Book> books = dao.getAllBooks();
         request.setAttribute("bookList", books);
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WebContent/pages/book.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/pages/book.jsp");
         dispatcher.forward(request, response);
     }
 
