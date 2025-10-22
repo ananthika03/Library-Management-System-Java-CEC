@@ -15,7 +15,7 @@ public class DashboardServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // Forwards the request to the dashboard JSP after the login filter passes
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WebContent/pages/dashboard.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/pages/dashboard.jsp");
         dispatcher.forward(request, response);
     }
 }

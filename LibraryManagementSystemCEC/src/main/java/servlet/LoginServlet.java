@@ -24,7 +24,7 @@ public class LoginServlet extends HttpServlet {
             session.setMaxInactiveInterval(30 * 60);
             
             // Redirect to the Dashboard Servlet
-            response.sendRedirect("pages/dashboard.jsp"); 
+            response.sendRedirect("dashboard"); 
         } else {
             // Redirect back to login page with error parameter
             response.sendRedirect("pages/login.html?error=invalid");

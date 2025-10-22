@@ -1,7 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-        <!-- for the currency symbol adding UTT-8 encoding -->
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,127 +7,411 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reports</title>
-  <link rel="stylesheet" href="../css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    body {
+    /* Reset and Base Styles */
+    * {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f7fb;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: 'Poppins', sans-serif;
+      color: #fff;
+    }
+    body {
       display: flex;
+      background: #0d0517; /* Fallback */
+      overflow: hidden;
     }
 
-    /* Sidebar */
-    .sidebar {
-      width: 210px;
-      background: #30465d;
-      color: white;
-      min-height: 100vh;
-      padding-top: 20px;
+    /* Animated Starfield Background */
+    #starfield-bg {
       position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background: radial-gradient(ellipse at bottom, #1a0b2e, #0d0517);
     }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar li { margin: 15px 0; }
-    .sidebar a { text-decoration: none; color: white; display: block; padding: 10px 20px; transition: background 0.3s; }
-    .sidebar a:hover { background: #34495e; border-radius: 6px; }
 
-    /* Main */
-    .dashboard-main { margin-left: 250px; padding: 30px 20px; }
-    .dashboard-main h2 { color: #2c3e50; margin-bottom: 20px; }
-
-    /* Card/Form */
-    .card {
-      background: #eaf3fc;
+    /* Sidebar (Same as dashboard.jsp) */
+    .sidebar {
+      position: relative;
+      z-index: 3;
+      width: 260px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: rgba(20, 10, 30, 0.75);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(188, 19, 254, 0.3);
+      box-shadow: 0 0 20px rgba(188, 19, 254, 0.1);
+      flex-shrink: 0;
+    }
+    .sidebar-header {
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
-    }
-
-    /* Summary Stats */
-    .stats { display: flex; gap: 15px; margin-bottom: 20px; }
-    .stat-box {
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      flex: 1;
       text-align: center;
-      font-weight: bold;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      border-bottom: 1px solid rgba(188, 19, 254, 0.2);
+    }
+    .sidebar-header img {
+      height: 40px;
+      margin-bottom: 10px;
+    }
+    .sidebar-header h2 {
+      font-size: 1.2rem;
+      color: #f0f0f0;
+      font-weight: 500;
+    }
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .sidebar-nav ul {
+      list-style: none;
+      padding-top: 20px;
+    }
+    .sidebar-nav li a {
+      display: flex;
+      align-items: center;
+      padding: 16px 25px;
+      color: #aaa;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+    .sidebar-nav li a svg {
+      width: 20px;
+      height: 20px;
+      margin-right: 15px;
+      stroke-width: 2px;
+    }
+    .sidebar-nav li a:hover {
+      background: rgba(0, 229, 255, 0.1);
+      color: #00e5ff;
+      border-left-color: #00e5ff;
+    }
+    .sidebar-nav li.active a {
+      background: rgba(0, 229, 255, 0.15);
+      color: #00e5ff;
+      border-left-color: #00e5ff;
+    }
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid rgba(188, 19, 254, 0.2);
+    }
+    .logout-btn {
+      display: block;
+      text-align: center;
+      background: #00e5ff;
+      color: #0d0517;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 229, 255, 0.4);
     }
 
-    /* Form */
-    .form-group { margin-bottom: 12px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input, select { padding: 8px; width: 100%; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-    .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; margin: 8px 5px 0 0; }
-    .btn-submit { background: #2ecc71; color: white; }
-    .btn-cancel { background: #e74c3c; color: white; }
+    /* Main Content */
+    .main-content {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 40px;
+    }
+    .main-content h1 {
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: #f0f0f0;
+      margin-bottom: 25px;
+    }
+    .main-content h2 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: #00e5ff;
+      margin-bottom: 20px;
+    }
+    
+    /* Glowing "Card" container */
+    .form-container {
+      background: rgba(20, 10, 30, 0.75);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      border-radius: 20px;
+      border: 1px solid rgba(188, 19, 254, 0.3);
+      box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
+      margin-bottom: 25px;
+    }
+    
+    /* Stats Boxes */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    .stat-box {
+      background: rgba(20, 10, 30, 0.75);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      border-radius: 20px;
+      border: 1px solid rgba(188, 19, 254, 0.3);
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f0f0f0;
+      transition: all 0.3s ease;
+    }
+    .stat-box:hover {
+      transform: translateY(-5px);
+      border-color: #00e5ff;
+      box-shadow: 0 5px 20px rgba(0, 229, 255, 0.2);
+    }
 
-    /* Table */
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    th, td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
-    th { background: #3498db; color: white; }
-    tr:hover { background: #f1f1f1; }
-    .status-returned { background: #2ecc71; color: white; padding: 5px 8px; border-radius: 5px; display: inline-block; }
-    .status-overdue { background: #e74c3c; color: white; padding: 5px 8px; border-radius: 5px; display: inline-block; }
+    /* Report Form */
+    #reportForm {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .form-group label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="date"],
+    .form-group select {
+      padding: 12px 15px;
+      border: 1px solid #bc13fe;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+    }
+    .form-group input::placeholder { color: #888; }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #00e5ff;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+    }
+    
+    /* Buttons */
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 10px;
+    }
+    .btn-submit {
+      background: #00e5ff;
+      color: #0d0517;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 229, 255, 0.4);
+    }
+    .btn-cancel {
+      background: #e74c3c;
+      color: white;
+    }
+    .btn-cancel:hover {
+      background: #c0392b;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+    }
+
+    /* Table Container */
+    .table-container {
+      background: rgba(20, 10, 30, 0.75);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(188, 19, 254, 0.3);
+      box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
+      overflow: hidden; /* For border-radius */
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid rgba(188, 19, 254, 0.2);
+    }
+    th {
+      background: rgba(188, 19, 254, 0.2);
+      color: #00e5ff;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+    tr {
+      transition: background 0.2s ease;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover {
+      background: rgba(0, 229, 255, 0.05);
+    }
+    
+    /* Status Badges */
+    .status-returned, .status-overdue {
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .status-returned {
+      background: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+    }
+    .status-overdue {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+    }
+    
   </style>
 </head>
 <body>
 
+  <canvas id="starfield-bg"></canvas>
+
   <aside class="sidebar">
-    <ul>
-      <li><a href="books">Books</a></li>
-      <li><a href="students">Students</a></li>
-      <li><a href="issues">Issue Book</a></li>
-      <li><a href="returns">Return Book</a></li>
-      <li><a href="reports">Reports</a></li>
-      <li><a href="logout">Logout</a></li>
-      <li><a href="../index.html">Main Page</a></li>
-    </ul>
+    <div class="sidebar-header">
+      <img src="https://ceconline.edu/wp-content/uploads/2024/06/CEC-logo.png" alt="CEC Logo">
+      <h2>Librarian's Hub</h2>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="${pageContext.request.contextPath}/dashboard"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Dashboard
+          </a>
+        </li>
+        <li> 
+          <a href="${pageContext.request.contextPath}/books">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            Manage Books
+          </a>
+        </li>
+        <li>
+          <a href="${pageContext.request.contextPath}/students">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Manage Students
+          </a>
+        </li>
+        <li>
+          <a href="${pageContext.request.contextPath}/issues">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="m12 18 4-4-4-4"></path><path d="m8 14h8"></path></svg>
+            Issue Book
+          </a>
+        </li>
+        <li>
+          <a href="${pageContext.request.contextPath}/returns">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="m12 18-4-4 4-4"></path><path d="m16 14H8"></path></svg>
+            Return Book
+          </a>
+        </li>
+        <li class="active">
+          <a href="${pageContext.request.contextPath}/reports">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+            View Reports
+          </a>
+        </li>
+         <li>
+          <a href="${pageContext.request.contextPath}/index.html">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            Main Page
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Logout</a>
+    </div>
   </aside>
 
-  <main class="dashboard-main">
-    <div class="card">
-      <h2>Reports</h2>
+  <main class="main-content">
+    <h1>Reports</h1>
 
-      <div class="stats">
-        <div class="stat-box" id="booksIssued">Books Issued: 0</div>
-        <div class="stat-box" id="returnsToday">Returns Today: 0</div>
-        <div class="stat-box" id="overdue">Overdue: 0</div>
-      </div>
+    <div class="stats">
+      <div class="stat-box" id="booksIssued">Books Issued: 0</div>
+      <div class="stat-box" id="returnsToday">Returns Today: 0</div>
+      <div class="stat-box" id="overdue">Overdue: 0</div>
+    </div>
 
+    <div class="form-container">
+      <h2>Add New Report Record</h2>
       <form id="reportForm" action="reports" method="post">
         <div class="form-group">
-          <label>Student ID</label>
+          <label for="studentId">Student ID</label>
           <input type="text" id="studentId" name="studentId" required>
         </div>
         <div class="form-group">
-          <label>Book ID</label>
+          <label for="bookId">Book ID</label>
           <input type="text" id="bookId" name="bookId" required>
         </div>
         <div class="form-group">
-          <label>Issue Date</label>
+          <label for="issueDate">Issue Date</label>
           <input type="date" id="issueDate" name="issueDate" required>
         </div>
         <div class="form-group">
-          <label>Due Date</label>
+          <label for="dueDate">Due Date</label>
           <input type="date" id="dueDate" name="dueDate" required>
         </div>
         <div class="form-group">
-          <label>Fine Amount</label>
+          <label for="fine">Fine Amount</label>
           <input type="number" id="fine" name="fine" value="0" required>
         </div>
         <div class="form-group">
-          <label>Status</label>
+          <label for="status">Status</label>
           <select id="status" name="status" required>
             <option value="Returned">Returned</option>
             <option value="Overdue">Overdue</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-submit">Add Record</button>
-        <button type="reset" class="btn btn-cancel">Clear</button>
+        <div class="form-group">
+            <label style="opacity: 0;">Submit</label> <button type="submit" class="btn btn-submit">Add Record</button>
+        </div>
+        <div class="form-group">
+            <label style="opacity: 0;">Clear</label> <button type="reset" class="btn btn-cancel">Clear</button>
+        </div>
       </form>
+    </div>
 
+    <div class="table-container">
       <table id="reportTable">
         <thead>
           <tr>
@@ -164,7 +446,7 @@
                 </tr>
             </c:forEach>
              <c:if test="${empty reportList}">
-                 <tr><td colspan="7">No report records found.</td></tr>
+                 <tr><td colspan="7" style="text-align: center; color: #aaa;">No report records found.</td></tr>
              </c:if>
         </tbody>
       </table>
@@ -196,12 +478,75 @@
         }
       });
 
-      booksIssuedBox.textContent = "Books Issued: " + booksIssued;
-      returnsTodayBox.textContent = "Returns Today: " + returnsToday; 
-      overdueBox.textContent = "Overdue: " + overdueCount;
+      // Update text content
+      booksIssuedBox.textContent = "Total Records: " + booksIssued;
+      returnsTodayBox.textContent = "Total Returned: " + returnsToday; // Changed label to be more accurate
+      overdueBox.textContent = "Total Overdue: " + overdueCount;
     }
     
+    // Run stats on page load
     window.onload = updateStats;
+  </script>
+
+  <script>
+    const canvas = document.getElementById('starfield-bg');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let stars = [];
+    const numStars = 200;
+
+    class Star {
+      constructor(x, y, radius, color, velocity) {
+        this.x = x; this.y = y; this.radius = radius; this.color = color; this.velocity = velocity;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+      update() {
+        this.y += this.velocity;
+        if (this.y - this.radius > canvas.height) {
+          this.y = 0 - this.radius;
+          this.x = Math.random() * canvas.width;
+          this.radius = Math.random() * 1.5 + 0.5;
+          this.velocity = Math.random() * 0.5 + 0.1;
+        }
+        this.draw();
+      }
+    }
+    
+    function init() {
+      stars = [];
+      for (let i = 0; i < numStars; i++) {
+        const radius = Math.random() * 1.5 + 0.5;
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const color = 'rgba(188, 19, 254, 0.6)';
+        const velocity = Math.random() * 0.5 + 0.1;
+        stars.push(new Star(x, y, radius, color, velocity));
+      }
+    }
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < stars.length; i++) {
+        stars[i].update();
+      }
+    }
+    
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      init();
+    });
+    
+    init();
+    animate();
   </script>
 
 </body>

@@ -4,74 +4,189 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Library Management - Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
+    /* Reset and Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      width: 100%;
       font-family: 'Poppins', sans-serif;
+      color: #fff;
+      overflow: hidden; /* Prevents scrollbars from particle canvas */
+    }
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #04315f, #0055a5);
-      color: #333;
+      background: radial-gradient(ellipse at bottom, #1a0b2e, #0d0517);
     }
+
+    /* Interactive Background Canvas */
+    #interactive-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Login Container */
     .login-container {
-      background: #fff;
+      position: relative;
+      z-index: 2; /* Sits on top of the background */
+      background: rgba(20, 10, 30, 0.75);
+      backdrop-filter: blur(10px);
       padding: 40px 35px;
-      border-radius: 15px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      border-radius: 20px;
       width: 100%;
       max-width: 420px;
       text-align: center;
-      animation: fadeIn 1s ease-in-out;
+      
+      /* Glowing Border Effect */
+      border: 1px solid rgba(188, 19, 254, 0.3);
+      animation: glow 2.5s infinite alternate;
+      box-shadow: 0 0 15px rgba(188, 19, 254, 0.2),
+                  0 0 25px rgba(188, 19, 254, 0.1);
     }
-    .login-container h1 { font-size: 1.4rem; color: #04315f; margin-bottom: 5px; font-weight: 600; }
-    .login-container h3 { font-size: 1rem; color: #555; margin-bottom: 20px; font-weight: 500; }
-    .login-title { font-size: 1.3rem; margin-bottom: 20px; color: #0055a5; }
-    .login-form { display: flex; flex-direction: column; text-align: left; }
-    .login-form label { margin-bottom: 5px; font-weight: 500; color: #333; }
+
+    @keyframes glow {
+      from {
+        box-shadow: 0 0 10px rgba(188, 19, 254, 0.3),
+                    0 0 20px rgba(188, 19, 254, 0.2);
+      }
+      to {
+        box-shadow: 0 0 20px rgba(188, 19, 254, 0.7),
+                    0 0 40px rgba(188, 19, 254, 0.5);
+      }
+    }
+
+    /* Titles */
+    .login-container h1 {
+      font-size: 1.4rem;
+      color: #f0f0f0;
+      margin-bottom: 5px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .login-container h3 {
+      font-size: 1rem;
+      color: #aaa;
+      margin-bottom: 25px;
+      font-weight: 400;
+    }
+    .login-title {
+      font-size: 1.5rem;
+      margin-bottom: 25px;
+      color: #00e5ff;
+      font-weight: 500;
+    }
+
+    /* Error Message Styling */
+    .error {
+      color: #ff4d4d;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      background: rgba(255, 77, 77, 0.1);
+      border: 1px solid rgba(255, 77, 77, 0.3);
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    /* Form and Inputs */
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    
+    .input-group svg {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #bc13fe;
+      width: 18px;
+      height: 18px;
+    }
+
     .login-form input {
-      padding: 12px;
-      margin-bottom: 18px;
-      border: 1px solid #ccc;
+      width: 100%;
+      padding: 14px 14px 14px 50px; /* Space for icon */
+      border: 1px solid #bc13fe;
+      background: rgba(255, 255, 255, 0.05);
       border-radius: 8px;
       font-size: 1rem;
-      transition: 0.3s;
+      color: #fff;
+      transition: all 0.3s ease;
     }
     .login-form input:focus {
-      border-color: #0055a5;
       outline: none;
-      box-shadow: 0 0 8px rgba(0, 85, 165, 0.3);
+      border-color: #00e5ff;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
     }
+    .login-form input::placeholder {
+      color: #888;
+    }
+
+    /* Emergent Button */
     .login-btn {
-      background: linear-gradient(135deg, #0055a5, #04315f);
-      color: white;
-      padding: 12px;
+      background: #00e5ff;
+      color: #0d0517;
+      padding: 14px;
       border: none;
       border-radius: 8px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s ease, background 0.3s ease;
+      margin-top: 10px;
+      transition: all 0.2s ease;
     }
     .login-btn:hover {
       transform: translateY(-2px);
-      background: linear-gradient(135deg, #04315f, #002c4d);
+      box-shadow: 0 5px 20px rgba(0, 229, 255, 0.4);
     }
-    .forgot-link { display: block; margin-top: 15px; font-size: 0.9rem; text-decoration: none; color: #0055a5; transition: 0.3s; }
-    .forgot-link:hover { text-decoration: underline; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .error { color: red; font-size: 0.9rem; margin-bottom: 10px; }
+    /* This is the "emergent" press effect */
+    .login-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 2px 10px rgba(0, 229, 255, 0.3),
+                  inset 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Forgot Password Link */
+    .forgot-link {
+      display: block;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      text-decoration: none;
+      color: #00e5ff;
+      transition: color 0.3s;
+    }
+    .forgot-link:hover {
+      text-decoration: underline;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
 
+  <canvas id="interactive-bg"></canvas>
+
   <div class="login-container">
     <h1>LIBRARY MANAGEMENT SYSTEM</h1>
     <h3>COLLEGE OF ENGINEERING CHENGANNUR</h3>
-    <h2 class="login-title">Login</h2>
-
+    <h2 class="login-title">Admin Login</h2>
 
     <script>
       const urlParams = new URLSearchParams(window.location.search);
@@ -90,17 +205,166 @@
     </script>
     
     <form action="../login" method="post" class="login-form">
-      <label for="userid">College ID / Staff ID</label>
-      <input type="text" id="userid" name="userid" placeholder="Enter your ID" required>
+      
+      <div class="input-group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.5a5.5 5.5 0 0 1 5.5 5.5c0 3.03-2.47 5.5-5.5 5.5S6.5 11.03 6.5 8a5.5 5.5 0 0 1 5.5-5.5zM12 15c-4.34 0-8 3.66-8 8v1h16v-1c0-4.34-3.66-8-8-8z"/>
+        </svg>
+        <input type="text" id="userid" name="userid" placeholder="College ID / Staff ID" required>
+      </div>
 
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" placeholder="Enter your password" required>
+      <div class="input-group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+        </svg>
+        <input type="password" id="password" name="password" placeholder="Password" required>
+      </div>
 
       <button type="submit" class="login-btn">Login</button>
     </form>
 
     <a href="#" class="forgot-link">Forgot Password?</a>
   </div>
+
+  <script>
+    const canvas = document.getElementById('interactive-bg');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let particlesArray = [];
+    const numParticles = 100;
+
+    // Mouse position
+    const mouse = {
+      x: null,
+      y: null,
+      radius: 150
+    };
+
+    window.addEventListener('mousemove', (event) => {
+      mouse.x = event.x;
+      mouse.y = event.y;
+    });
+    window.addEventListener('mouseout', () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+    
+    // Particle class
+    class Particle {
+      constructor(x, y, dirX, dirY, size, color) {
+        this.x = x;
+        this.y = y;
+        this.dirX = dirX;
+        this.dirY = dirY;
+        this.size = size;
+        this.color = color;
+      }
+      
+      // Draw individual particle
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+      
+      // Update particle position
+      update() {
+        // Check canvas boundary
+        if (this.x > canvas.width || this.x < 0) {
+          this.dirX = -this.dirX;
+        }
+        if (this.y > canvas.height || this.y < 0) {
+          this.dirY = -this.dirY;
+        }
+        
+        // Mouse interaction
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < mouse.radius + this.size) {
+          if (mouse.x < this.x && this.x < canvas.width - this.size * 10) {
+            this.x += 5;
+          }
+          if (mouse.x > this.x && this.x > this.size * 10) {
+            this.x -= 5;
+          }
+          if (mouse.y < this.y && this.y < canvas.height - this.size * 10) {
+            this.y += 5;
+          }
+          if (mouse.y > this.y && this.y > this.size * 10) {
+            this.y -= 5;
+          }
+        }
+        
+        // Move particle
+        this.x += this.dirX;
+        this.y += this.dirY;
+        
+        this.draw();
+      }
+    }
+    
+    // Create particles
+    function init() {
+      particlesArray = [];
+      for (let i = 0; i < numParticles; i++) {
+        let size = Math.random() * 2 + 1;
+        let x = Math.random() * (canvas.width - size * 2) + size;
+        let y = Math.random() * (canvas.height - size * 2) + size;
+        let dirX = (Math.random() * 0.4) - 0.2;
+        let dirY = (Math.random() * 0.4) - 0.2;
+        let color = 'rgba(188, 19, 254, 0.5)'; // Purple dots
+        particlesArray.push(new Particle(x, y, dirX, dirY, size, color));
+      }
+    }
+    
+    // Connect particles
+    function connect() {
+      let opacityValue = 1;
+      for (let a = 0; a < particlesArray.length; a++) {
+        for (let b = a + 1; b < particlesArray.length; b++) {
+          let distance = 
+            (particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x) +
+            (particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y);
+          
+          if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+            opacityValue = 1 - (distance / 20000);
+            ctx.strokeStyle = `rgba(0, 229, 255, ${opacityValue * 0.3})`; // Cyan lines
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+    
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+      }
+      connect();
+    }
+    
+    // Resize event
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      mouse.radius = 150;
+      init();
+    });
+    
+    init();
+    animate();
+  </script>
 
 </body>
 </html>
