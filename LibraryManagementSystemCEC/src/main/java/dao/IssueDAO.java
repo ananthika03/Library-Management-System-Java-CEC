@@ -8,7 +8,7 @@ import java.util.List;
 
 public class IssueDAO {
 
-    // 1. UPDATED: Now sets the 'status' column on creation
+    // This method correctly inserts a new issue with the "Issued" status.
     public void addIssue(Issue i) {
         String sql = "INSERT INTO issues (student_id, book_id, issue_date, due_date, status) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -17,18 +17,18 @@ public class IssueDAO {
             ps.setInt(2, i.getBookId());
             ps.setDate(3, Date.valueOf(i.getIssueDate()));
             ps.setDate(4, Date.valueOf(i.getDueDate()));
-            ps.setString(5, "Issued"); // Set status
+            ps.setString(5, "Issued"); // Automatically set status
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // 2. UPDATED: Now fetches the 'status'
+    // THIS IS THE METHOD THAT WAS CAUSING THE ERROR. IT IS NOW FIXED.
+    // It correctly fetches only the books with status = 'Issued'.
     public List<Issue> getAllIssues() {
         List<Issue> list = new ArrayList<>();
-        // Note: Change SQL to "SELECT * FROM issues WHERE status = 'Issued'" if you only want to see active issues
-        String sql = "SELECT * FROM issues"; 
+        String sql = "SELECT * FROM issues WHERE status = 'Issued'";
         try (Connection conn = DBConnection.getConnection();
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
@@ -40,16 +40,17 @@ public class IssueDAO {
                 i.setBookId(rs.getInt("book_id"));
                 i.setIssueDate(rs.getDate("issue_date").toLocalDate());
                 i.setDueDate(rs.getDate("due_date").toLocalDate());
-                i.setStatus(rs.getString("status")); // Get status
+                i.setStatus(rs.getString("status")); // Reads the status column
                 list.add(i);
             }
         } catch (SQLException e) {
+            // This is the error you were seeing. It will be resolved after adding the column.
             e.printStackTrace();
         }
         return list;
     }
 
-    // 3. deleteIssue is unchanged
+    // This method is for deleting an issue record.
     public void deleteIssue(int issueId) {
         String sql = "DELETE FROM issues WHERE issue_id=?";
         try (Connection conn = DBConnection.getConnection();
@@ -61,7 +62,7 @@ public class IssueDAO {
         }
     }
 
-    // 4. NEW: This method finds the active (status = 'Issued') issue
+    // This method finds an active issue for the return process.
     public Issue getActiveIssue(int studentId, int bookId) {
         String sql = "SELECT * FROM issues WHERE student_id = ? AND book_id = ? AND status = 'Issued' ORDER BY issue_id DESC LIMIT 1";
         Issue i = null;
@@ -83,13 +84,12 @@ public class IssueDAO {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("!!! --- DATABASE ERROR in getActiveIssue --- !!!");
             e.printStackTrace();
         }
-        return i; // Will be null if no 'Issued' record is found
+        return i;
     }
     
-    // 5. NEW: This method updates the status of an issue
+    // This method updates the status of an issue (e.g., to "Returned").
     public void updateIssueStatus(int issueId, String status) {
         String sql = "UPDATE issues SET status = ? WHERE issue_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -100,7 +100,6 @@ public class IssueDAO {
             ps.executeUpdate();
             
         } catch (SQLException e) {
-            System.out.println("!!! --- DATABASE ERROR in updateIssueStatus --- !!!");
             e.printStackTrace();
         }
     }
