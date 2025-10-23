@@ -18,12 +18,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Logger;
 
-// The URL pattern for this servlet is "/issues"
 @WebServlet("/issues")
 public class IssueServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    // Logger to help with debugging in the server console
     private static final Logger LOGGER = Logger.getLogger(IssueServlet.class.getName());
 
     private IssueDAO issueDAO = new IssueDAO();
@@ -31,69 +29,66 @@ public class IssueServlet extends HttpServlet {
     private StudentDAO studentDAO = new StudentDAO();
 
     /**
-     * This method is called when you visit the page. It's responsible for
-     * fetching the list of issued books from the database and displaying them.
+     * This method is called when the page is loaded. It fetches the
+     * current list of issued books and displays them.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        LOGGER.info("GET request received. Fetching all issued books...");
+        LOGGER.info("GET request for /issues. Fetching all issued books...");
         
-        // Fetch the list of books with "Issued" status
         List<Issue> issues = issueDAO.getAllIssues();
-        
-        // Set the list as an attribute that the JSP page can access
         request.setAttribute("issueList", issues);
         
         LOGGER.info("Forwarding to issue.jsp with " + issues.size() + " issued books.");
 
-        // Forward the request to the JSP page to display the data
         RequestDispatcher dispatcher = request.getRequestDispatcher("/pages/issue.jsp");
         dispatcher.forward(request, response);
     }
 
     /**
-     * This method is called ONLY when you submit the form on the page.
-     * It handles saving the new issue to the database.
+     * This method is called when you submit the form to add or delete an issue.
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String action = request.getParameter("action");
-
+        
         // --- Handle Delete Action ---
         if ("delete".equals(action)) {
-            try {
-                int issueId = Integer.parseInt(request.getParameter("issueId"));
-                LOGGER.info("POST request received to delete issue ID: " + issueId);
-                issueDAO.deleteIssue(issueId);
-            } catch (NumberFormatException e) {
-                LOGGER.severe("Invalid Issue ID for deletion: " + request.getParameter("issueId"));
-            }
-            // After deleting, redirect to refresh the list
-            response.sendRedirect(request.getContextPath() + "/issues");
+            handleDelete(request, response);
             return;
         }
 
-        // --- Handle Add Issue Action ---
+        // --- Handle Add Issue Action (Default) ---
+        handleAdd(request, response);
+    }
+
+    private void handleAdd(HttpServletRequest request, HttpServletResponse response) throws IOException {
         LOGGER.info("POST request received to add a new issue.");
         try {
             int studentId = Integer.parseInt(request.getParameter("studentId"));
             int bookId = Integer.parseInt(request.getParameter("bookId"));
 
+            // **ROBUST VALIDATION AND LOGGING**
             Student student = studentDAO.getStudentById(studentId);
-            Book book = bookDAO.getBookById(bookId);
-
-            // Validation checks
-            if (student == null || book == null) {
-                LOGGER.warning("Issue failed: Student or Book not found.");
-                response.sendRedirect(request.getContextPath() + "/issues?error=notfound");
+            if (student == null) {
+                LOGGER.warning("ISSUE FAILED: Student with ID " + studentId + " was not found in the database.");
+                response.sendRedirect(request.getContextPath() + "/issues?error=studentnotfound");
                 return;
             }
+
+            Book book = bookDAO.getBookById(bookId);
+            if (book == null) {
+                LOGGER.warning("ISSUE FAILED: Book with ID " + bookId + " was not found in the database.");
+                response.sendRedirect(request.getContextPath() + "/issues?error=booknotfound");
+                return;
+            }
+
             if (book.getAvailableCopies() <= 0) {
-                LOGGER.warning("Issue failed: No available copies for book ID " + bookId);
+                LOGGER.warning("ISSUE FAILED: No available copies for book ID " + bookId);
                 response.sendRedirect(request.getContextPath() + "/issues?error=nocopies");
                 return;
             }
@@ -104,26 +99,38 @@ public class IssueServlet extends HttpServlet {
             newIssue.setBookId(bookId);
             newIssue.setIssueDate(LocalDate.parse(request.getParameter("issueDate")));
             newIssue.setDueDate(LocalDate.parse(request.getParameter("dueDate")));
+            
             issueDAO.addIssue(newIssue);
-            LOGGER.info("Successfully saved new issue for student ID " + studentId);
+            LOGGER.info("SUCCESS: New issue for student ID " + studentId + " has been saved to the database.");
 
-            // Update related data
+            // Update related records
             book.setAvailableCopies(book.getAvailableCopies() - 1);
             bookDAO.updateBook(book);
+
             student.setIssuedBooks(student.getIssuedBooks() + 1);
             studentDAO.updateStudent(student);
 
         } catch (Exception e) {
-            LOGGER.severe("An error occurred while adding a new issue: " + e.getMessage());
+            LOGGER.severe("A critical error occurred while adding a new issue: " + e.getMessage());
             e.printStackTrace();
         }
 
-        // **THE MOST IMPORTANT STEP**
-        // After the data is saved, we send a redirect command to the browser.
-        // This tells the browser to make a brand new GET request to the "/issues" URL.
-        // This new request will trigger the doGet method above, which fetches the
-        // complete, updated list from the database.
-        LOGGER.info("Redirecting to /issues to refresh the page.");
+        // **THE FINAL FIX**: Use getContextPath() to create an absolute URL.
+        // This reliably tells the browser to make a new GET request to the correct servlet,
+        // which then fetches the updated list from the database.
+        LOGGER.info("Redirecting to the absolute path to refresh the page.");
+        response.sendRedirect(request.getContextPath() + "/issues");
+    }
+
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            int issueId = Integer.parseInt(request.getParameter("issueId"));
+            LOGGER.info("POST request received to delete issue ID: " + issueId);
+            // In a real-world scenario, you would also update the book/student counts here
+            issueDAO.deleteIssue(issueId);
+        } catch (NumberFormatException e) {
+            LOGGER.severe("Invalid Issue ID for deletion: " + request.getParameter("issueId"));
+        }
         response.sendRedirect(request.getContextPath() + "/issues");
     }
 }

@@ -68,9 +68,8 @@ public class ReturnServlet extends HttpServlet {
                 return;
             }
 
-            // --- 1. AUTOMATIC FINE CALCULATION ---
+            // --- 1. AUTOMATIC FINE CALCULATION WITH LOGGING ---
             BigDecimal fineAmount = calculateFine(issueToReturn.getDueDate());
-            LOGGER.info("Calculated fine for this return is: " + fineAmount);
 
             // --- 2. CREATE THE RETURN RECORD ---
             Return newReturn = new Return();
@@ -78,7 +77,6 @@ public class ReturnServlet extends HttpServlet {
             newReturn.setBookId(bookId);
             newReturn.setIssueId(issueToReturn.getIssueId());
             newReturn.setReturnDate(LocalDate.now());
-            // **FIXED**: Convert BigDecimal to double before setting
             newReturn.setFine(fineAmount.doubleValue());
             returnDAO.addReturn(newReturn);
 
@@ -88,7 +86,6 @@ public class ReturnServlet extends HttpServlet {
             report.setBookId(bookId);
             report.setIssueDate(issueToReturn.getIssueDate());
             report.setDueDate(issueToReturn.getDueDate());
-            // **FIXED**: Convert BigDecimal to double before setting
             report.setFine(fineAmount.doubleValue());
             report.setStatus(fineAmount.compareTo(BigDecimal.ZERO) > 0 ? "Overdue" : "Returned");
             reportDAO.addReport(report);
@@ -118,17 +115,28 @@ public class ReturnServlet extends HttpServlet {
     }
 
     /**
-     * Calculates the fine based on the due date.
-     * @param dueDate The date the book was due.
-     * @return The calculated fine amount as a BigDecimal.
+     * Calculates the fine and logs the process for debugging.
      */
     private BigDecimal calculateFine(LocalDate dueDate) {
         LocalDate currentDate = LocalDate.now();
+        
+        // **ENHANCED LOGGING TO HELP YOU DEBUG**
+        LOGGER.info("--- Starting Fine Calculation ---");
+        LOGGER.info("Due Date from Database: " + dueDate);
+        LOGGER.info("Current System Date: " + currentDate);
+        
+        // This calculates the number of full days between the two dates.
+        // It will be POSITIVE only if the current date is AFTER the due date.
         long daysOverdue = ChronoUnit.DAYS.between(dueDate, currentDate);
+        
+        LOGGER.info("Calculated Days Overdue: " + daysOverdue);
 
         if (daysOverdue > 0) {
-            return FINE_PER_DAY.multiply(new BigDecimal(daysOverdue));
+            BigDecimal calculatedFine = FINE_PER_DAY.multiply(new BigDecimal(daysOverdue));
+            LOGGER.info("Result: Fine IS applicable. Amount: " + calculatedFine);
+            return calculatedFine;
         } else {
+            LOGGER.info("Result: Book is NOT overdue. Fine is 0.");
             return BigDecimal.ZERO;
         }
     }
