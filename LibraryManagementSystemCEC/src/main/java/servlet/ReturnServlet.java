@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -32,12 +33,9 @@ public class ReturnServlet extends HttpServlet {
 
     private ReturnDAO returnDAO = new ReturnDAO();
     private IssueDAO issueDAO = new IssueDAO();
-    private BookDAO bookDAO = new BookDAO();
-    private StudentDAO studentDAO = new StudentDAO();
-    private ReportDAO reportDAO = new ReportDAO();
+    private ReportDAO reportDAO = new ReportDAO(); // Keep for report generation
 
-    // You can easily change the fine amount here. E.g., "2.50" for 2.50 per day.
-    private static final BigDecimal FINE_PER_DAY = new BigDecimal("1.00");
+    private static final BigDecimal FINE_PER_DAY = new BigDecimal("10.00");
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -56,31 +54,36 @@ public class ReturnServlet extends HttpServlet {
             throws ServletException, IOException {
         
         LOGGER.info("POST request to process a book return.");
+        String redirectUrl = request.getContextPath() + "/returns";
+
         try {
             int studentId = Integer.parseInt(request.getParameter("studentId"));
             int bookId = Integer.parseInt(request.getParameter("bookId"));
+            LocalDate returnDate = LocalDate.parse(request.getParameter("returnDate"));
 
             Issue issueToReturn = issueDAO.getActiveIssue(studentId, bookId);
 
             if (issueToReturn == null) {
                 LOGGER.warning("Return failed: No active issue found for Student ID " + studentId + " and Book ID " + bookId);
-                response.sendRedirect(request.getContextPath() + "/returns?error=noissue");
+                response.sendRedirect(redirectUrl + "?error=noissue");
                 return;
             }
 
-            // --- 1. AUTOMATIC FINE CALCULATION WITH LOGGING ---
-            BigDecimal fineAmount = calculateFine(issueToReturn.getDueDate());
+            BigDecimal fineAmount = calculateFine(issueToReturn.getDueDate(), returnDate);
 
-            // --- 2. CREATE THE RETURN RECORD ---
+            // 1. Create the Return object
             Return newReturn = new Return();
             newReturn.setStudentId(studentId);
             newReturn.setBookId(bookId);
             newReturn.setIssueId(issueToReturn.getIssueId());
-            newReturn.setReturnDate(LocalDate.now());
+            newReturn.setReturnDate(returnDate);
             newReturn.setFine(fineAmount.doubleValue());
-            returnDAO.addReturn(newReturn);
 
-            // --- 3. AUTOMATICALLY CREATE A REPORT RECORD ---
+            // 2. Execute the entire return process as a single transaction
+            // Note: ReportDAO is not part of this simple transaction for clarity, but could be added.
+            returnDAO.processBookReturnTransaction(newReturn);
+
+            // 3. Generate the report (this is separate from the core transaction)
             Report report = new Report();
             report.setStudentId(studentId);
             report.setBookId(bookId);
@@ -88,56 +91,27 @@ public class ReturnServlet extends HttpServlet {
             report.setDueDate(issueToReturn.getDueDate());
             report.setFine(fineAmount.doubleValue());
             report.setStatus(fineAmount.compareTo(BigDecimal.ZERO) > 0 ? "Overdue" : "Returned");
-            reportDAO.addReport(report);
-            LOGGER.info("Automatically generated a report for this return.");
+            reportDAO.addReport(report); // Assumes this operation is safe to do outside transaction
+            LOGGER.info("SUCCESS: Transaction complete for book return.");
 
-            // --- 4. UPDATE SYSTEM STATE ---
-            issueDAO.updateIssueStatus(issueToReturn.getIssueId(), "Returned");
+            redirectUrl += "?success=true";
 
-            Book book = bookDAO.getBookById(bookId);
-            if (book != null) {
-                book.setAvailableCopies(book.getAvailableCopies() + 1);
-                bookDAO.updateBook(book);
-            }
-
-            Student student = studentDAO.getStudentById(studentId);
-            if (student != null) {
-                student.setIssuedBooks(student.getIssuedBooks() - 1);
-                studentDAO.updateStudent(student);
-            }
-
+        } catch (SQLException e) {
+            LOGGER.severe("DATABASE ERROR during book return: " + e.getMessage());
+            redirectUrl += "?error=dberror";
         } catch (Exception e) {
             LOGGER.severe("An error occurred while processing a return: " + e.getMessage());
-            e.printStackTrace();
+            redirectUrl += "?error=generic";
         }
 
-        response.sendRedirect(request.getContextPath() + "/returns");
+        response.sendRedirect(redirectUrl);
     }
 
-    /**
-     * Calculates the fine and logs the process for debugging.
-     */
-    private BigDecimal calculateFine(LocalDate dueDate) {
-        LocalDate currentDate = LocalDate.now();
-        
-        // **ENHANCED LOGGING TO HELP YOU DEBUG**
-        LOGGER.info("--- Starting Fine Calculation ---");
-        LOGGER.info("Due Date from Database: " + dueDate);
-        LOGGER.info("Current System Date: " + currentDate);
-        
-        // This calculates the number of full days between the two dates.
-        // It will be POSITIVE only if the current date is AFTER the due date.
-        long daysOverdue = ChronoUnit.DAYS.between(dueDate, currentDate);
-        
-        LOGGER.info("Calculated Days Overdue: " + daysOverdue);
-
+    private BigDecimal calculateFine(LocalDate dueDate, LocalDate returnDate) {
+        long daysOverdue = ChronoUnit.DAYS.between(dueDate, returnDate);
         if (daysOverdue > 0) {
-            BigDecimal calculatedFine = FINE_PER_DAY.multiply(new BigDecimal(daysOverdue));
-            LOGGER.info("Result: Fine IS applicable. Amount: " + calculatedFine);
-            return calculatedFine;
-        } else {
-            LOGGER.info("Result: Book is NOT overdue. Fine is 0.");
-            return BigDecimal.ZERO;
+            return FINE_PER_DAY.multiply(new BigDecimal(daysOverdue));
         }
+        return BigDecimal.ZERO;
     }
 }

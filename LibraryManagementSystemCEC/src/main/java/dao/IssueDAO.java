@@ -2,33 +2,75 @@ package dao;
 
 import model.Issue;
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class IssueDAO {
 
-    // This method correctly inserts a new issue with the "Issued" status.
-    public void addIssue(Issue i) {
-        String sql = "INSERT INTO issues (student_id, book_id, issue_date, due_date, status) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, i.getStudentId());
-            ps.setInt(2, i.getBookId());
-            ps.setDate(3, Date.valueOf(i.getIssueDate()));
-            ps.setDate(4, Date.valueOf(i.getDueDate()));
-            ps.setString(5, "Issued"); // Automatically set status
-            ps.executeUpdate();
+    /**
+     * ✅ **NEW TRANSACTIONAL METHOD**
+     * Handles the entire process of issuing a book as a single atomic operation.
+     * If any step fails (e.g., no copies available), the whole transaction is rolled back.
+     *
+     * @param issue The Issue object containing student/book IDs and dates.
+     * @throws SQLException if a database error occurs or if no copies are available.
+     */
+    public void issueBookTransaction(Issue issue) throws SQLException {
+        Connection conn = null;
+        String sqlIssue = "INSERT INTO issues (student_id, book_id, issue_date, due_date, status) VALUES (?, ?, ?, ?, 'Issued')";
+        String sqlBookUpdate = "UPDATE books SET available_copies = available_copies - 1 WHERE book_id = ? AND available_copies > 0";
+        String sqlStudentUpdate = "UPDATE students SET issued_books = issued_books + 1 WHERE student_id = ?";
+
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false); // Start transaction
+
+            // Step 1: Update book copies. This is done first to ensure availability.
+            try (PreparedStatement ps = conn.prepareStatement(sqlBookUpdate)) {
+                ps.setInt(1, issue.getBookId());
+                int rowsAffected = ps.executeUpdate();
+                if (rowsAffected == 0) {
+                    throw new SQLException("No available copies for book ID: " + issue.getBookId());
+                }
+            }
+
+            // Step 2: Insert the new issue record
+            try (PreparedStatement ps = conn.prepareStatement(sqlIssue)) {
+                ps.setInt(1, issue.getStudentId());
+                ps.setInt(2, issue.getBookId());
+                ps.setDate(3, Date.valueOf(issue.getIssueDate()));
+                ps.setDate(4, Date.valueOf(issue.getDueDate()));
+                ps.executeUpdate();
+            }
+
+            // Step 3: Update the student's issued book count
+            try (PreparedStatement ps = conn.prepareStatement(sqlStudentUpdate)) {
+                ps.setInt(1, issue.getStudentId());
+                ps.executeUpdate();
+            }
+
+            conn.commit(); // If all steps succeed, commit the transaction
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (conn != null) {
+                conn.rollback(); // If any error occurs, roll back all changes
+            }
+            throw e; // Re-throw the exception to let the servlet know something went wrong
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-    // THIS IS THE METHOD THAT WAS CAUSING THE ERROR. IT IS NOW FIXED.
-    // It correctly fetches only the books with status = 'Issued'.
+    // Fetches all currently issued books
     public List<Issue> getAllIssues() {
         List<Issue> list = new ArrayList<>();
-        String sql = "SELECT * FROM issues WHERE status = 'Issued'";
+        String sql = "SELECT * FROM issues WHERE status = 'Issued' ORDER BY issue_date DESC";
         try (Connection conn = DBConnection.getConnection();
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
@@ -38,69 +80,42 @@ public class IssueDAO {
                 i.setIssueId(rs.getInt("issue_id"));
                 i.setStudentId(rs.getInt("student_id"));
                 i.setBookId(rs.getInt("book_id"));
-                i.setIssueDate(rs.getDate("issue_date").toLocalDate());
-                i.setDueDate(rs.getDate("due_date").toLocalDate());
-                i.setStatus(rs.getString("status")); // Reads the status column
+                Date issueDate = rs.getDate("issue_date");
+                if(issueDate != null) i.setIssueDate(issueDate.toLocalDate());
+                Date dueDate = rs.getDate("due_date");
+                if(dueDate != null) i.setDueDate(dueDate.toLocalDate());
+                i.setStatus(rs.getString("status"));
                 list.add(i);
             }
         } catch (SQLException e) {
-            // This is the error you were seeing. It will be resolved after adding the column.
             e.printStackTrace();
         }
         return list;
     }
 
-    // This method is for deleting an issue record.
-    public void deleteIssue(int issueId) {
-        String sql = "DELETE FROM issues WHERE issue_id=?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, issueId);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // This method finds an active issue for the return process.
+    // The find active issue method you already corrected
     public Issue getActiveIssue(int studentId, int bookId) {
         String sql = "SELECT * FROM issues WHERE student_id = ? AND book_id = ? AND status = 'Issued' ORDER BY issue_id DESC LIMIT 1";
-        Issue i = null;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setInt(1, studentId);
             ps.setInt(2, bookId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    i = new Issue();
-                    i.setIssueId(rs.getInt("issue_id"));
-                    i.setStudentId(rs.getInt("student_id"));
-                    i.setBookId(rs.getInt("book_id"));
-                    i.setIssueDate(rs.getDate("issue_date").toLocalDate());
-                    i.setDueDate(rs.getDate("due_date").toLocalDate());
-                    i.setStatus(rs.getString("status"));
-                }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Issue i = new Issue();
+                i.setIssueId(rs.getInt("issue_id"));
+                i.setStudentId(rs.getInt("student_id"));
+                i.setBookId(rs.getInt("book_id"));
+                i.setIssueDate(rs.getDate("issue_date").toLocalDate());
+                i.setDueDate(rs.getDate("due_date").toLocalDate());
+                i.setStatus(rs.getString("status"));
+                return i;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return i;
+        return null;
     }
     
-    // This method updates the status of an issue (e.g., to "Returned").
-    public void updateIssueStatus(int issueId, String status) {
-        String sql = "UPDATE issues SET status = ? WHERE issue_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setString(1, status);
-            ps.setInt(2, issueId);
-            ps.executeUpdate();
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+    // The old, non-transactional addIssue is no longer needed.
 }

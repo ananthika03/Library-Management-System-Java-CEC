@@ -54,6 +54,26 @@
     tr { transition: background 0.2s ease; }
     tr:last-child td { border-bottom: none; }
     tr:hover { background: rgba(0, 229, 255, 0.05); }
+
+    /* ✅ ADDED: Styles for success and error messages */
+    .message-box {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    .success-message {
+      background: rgba(46, 204, 113, 0.2);
+      border: 1px solid #2ecc71;
+      color: #2ecc71;
+    }
+    .error-message {
+      background: rgba(231, 76, 60, 0.2);
+      border: 1px solid #e74c3c;
+      color: #e74c3c;
+    }
   </style>
 </head>
 <body>
@@ -121,6 +141,23 @@
     
     <div class="form-container">
       <h1>Issue Book</h1>
+
+      <c:if test="${param.success eq 'true'}">
+          <p class="message-box success-message"> Book issued successfully!</p>
+      </c:if>
+      <c:if test="${not empty param.error}">
+          <p class="message-box error-message">
+              ❌ <strong>Error:</strong> 
+              <c:choose>
+                  <c:when test="${param.error eq 'dberror'}">Could not save to the database. Please check server logs.</c:when>
+                  <c:when test="${param.error eq 'studentnotfound'}">Student ID was not found.</c:when>
+                  <c:when test="${param.error eq 'booknotfound'}">Book ID was not found.</c:when>
+                  <c:when test="${param.error eq 'nocopies'}">No available copies of that book.</c:when>
+                  <c:otherwise>An unexpected error occurred.</c:otherwise>
+              </c:choose>
+          </p>
+      </c:if>
+
       <form id="issueForm" action="issues" method="post" style="width: 100%;">
         <div class="form-group">
           <label for="studentId">Student ID</label>
@@ -212,7 +249,7 @@
 
   <script>
     // Starfield background script - no changes needed here
-    const canvas = document.getElementById('starfield-bg');
+    // const canvas = document.getElementById('starfield-bg');
     // ... rest of your starfield animation logic
   </script>
 

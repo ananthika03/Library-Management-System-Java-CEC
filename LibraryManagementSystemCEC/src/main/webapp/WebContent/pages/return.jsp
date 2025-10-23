@@ -193,18 +193,7 @@
       box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
     }
     
-    /* Fine Box and Note */
-    .fine-box {
-      grid-column: 1 / -1; /* Span full width */
-      background: rgba(188, 19, 254, 0.1);
-      border: 1px solid #bc13fe;
-      padding: 15px;
-      border-radius: 8px;
-      text-align: center;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #00e5ff;
-    }
+    /* Fine Note */
     .fine-note {
       grid-column: 1 / -1; /* Span full width */
       font-size: 0.9rem;
@@ -213,7 +202,6 @@
       background: rgba(0, 229, 255, 0.05);
       border-left: 4px solid #00e5ff;
       border-radius: 4px;
-      margin-top: -10px;
     }
 
     /* Buttons */
@@ -254,7 +242,6 @@
       box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
       overflow-y: auto;
       flex: 1;
-       /* For border-radius */
     }
     table {
       width: 100%;
@@ -280,6 +267,26 @@
     }
     tr:hover {
       background: rgba(0, 229, 255, 0.05);
+    }
+
+    /* ✅ ADDED: Styles for success and error messages */
+    .message-box {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    .success-message {
+      background: rgba(46, 204, 113, 0.2);
+      border: 1px solid #2ecc71;
+      color: #2ecc71;
+    }
+    .error-message {
+      background: rgba(231, 76, 60, 0.2);
+      border: 1px solid #e74c3c;
+      color: #e74c3c;
     }
     
   </style>
@@ -327,7 +334,7 @@
         </li>
         <li>
           <a href="${pageContext.request.contextPath}/reports">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9"Y1="14" x2="15" y2="14"></line></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
             View Reports
           </a>
         </li>
@@ -348,14 +355,29 @@
     
     <div class="form-container">
       <h1>Return Book</h1>
+
+      <c:if test="${param.success eq 'true'}">
+          <p class="message-box success-message">✅ Book returned successfully!</p>
+      </c:if>
+      <c:if test="${not empty param.error}">
+          <p class="message-box error-message">
+              ❌ <strong>Error:</strong> 
+              <c:choose>
+                  <c:when test="${param.error eq 'dberror'}">Could not process the return due to a database error.</c:when>
+                  <c:when test="${param.error eq 'noissue'}">No active issue found for that Student and Book ID.</c:when>
+                  <c:otherwise>An unexpected error occurred.</c:otherwise>
+              </c:choose>
+          </p>
+      </c:if>
+
       <form id="returnForm" action="returns" method="post">
   		<div class="form-group">
     	  <label for="studentId">Student ID</label>
-    	  <input type="number" id="studentId" name="studentId" required>
+    	  <input type="number" id="studentId" name="studentId" placeholder="Enter Student ID" required>
   		</div>
   		<div class="form-group">
     		<label for="bookId">Book ID</label>
-    		<input type="number" id="bookId" name="bookId" required>
+    		<input type="number" id="bookId" name="bookId" placeholder="Enter Book ID" required>
   		</div>
   		<div class="form-group">
     		<label for="returnDate">Returning Date</label>
@@ -364,16 +386,15 @@
         
         <div style="grid-column: 1 / -1; height: 0;"></div> 
 
-        <div class="fine-box" id="fineBox">Fine Amount: ₹0</div>
-  	    <p class="fine-note">ℹ️ Keeping the book beyond the due date will incur an additional fine of ₹10/day.</p>
-  		
-        <input type="hidden" name="fine" id="fineInput" value="0">
-        
+  	    <p class="fine-note">ℹ️ Fine is calculated automatically by the server upon submission at a rate of ₹10/day.</p>
+  		        
         <div class="form-group">
-            <label style="opacity: 0;">Return</label> <button type="submit" class="btn btn-submit">Return</button>
+            <label style="opacity: 0;">Return</label> 
+            <button type="submit" class="btn btn-submit">Return Book</button>
         </div>
         <div class="form-group">
-            <label style="opacity: 0;">Cancel</label> <button type="reset" class="btn btn-cancel">Cancel</button>
+            <label style="opacity: 0;">Cancel</label> 
+            <button type="reset" class="btn btn-cancel">Cancel</button>
         </div>
 	  </form>
     </div>
@@ -407,26 +428,7 @@
   </main>
 
   <script>
-    const form = document.getElementById("returnForm");
-    const fineBox = document.getElementById("fineBox");
-    const fineInput = document.getElementById("fineInput");
-
-    form.addEventListener("submit", function(e){
-      const returnDate = new Date(document.getElementById("returnDate").value);
-      // NOTE: You must implement server-side logic to fetch the correct DUE DATE 
-      const dueDate = new Date(); // Placeholder as in your original file
-      let fine = 0;
-      
-      if (returnDate > dueDate) {
-        const diff = Math.ceil((returnDate - dueDate) / (1000 * 60 * 60 * 24));
-        fine = diff * 10;
-      }
-      fineBox.textContent = "Fine Amount: ₹" + fine;
-      fineInput.value = fine;
-    });
-  </script>
-
-  <script>
+    // Starfield background script (no changes needed)
     const canvas = document.getElementById('starfield-bg');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
