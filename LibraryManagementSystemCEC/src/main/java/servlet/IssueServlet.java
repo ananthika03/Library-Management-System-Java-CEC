@@ -17,7 +17,7 @@ public class IssueServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     // doGet: Fetches and displays all current issue records
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)    
             throws ServletException, IOException {
         
         IssueDAO dao = new IssueDAO();
@@ -30,10 +30,31 @@ public class IssueServlet extends HttpServlet {
         dispatcher.forward(request, response);
     }
     
+    // doPost: Handles both ADDING a new issue and DELETING an existing one
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // ... (Existing parameter fetching code)
+        IssueDAO dao = new IssueDAO();
+        String action = request.getParameter("action"); // Check for action parameter
+
+        // --- NEW: Handle Delete Action ---
+        if ("delete".equals(action)) {
+            try {
+                int issueId = Integer.parseInt(request.getParameter("issueId"));
+                dao.deleteIssue(issueId); // Call the DAO method
+            } catch (NumberFormatException e) {
+                // Log or handle error appropriately
+                System.err.println("Invalid Issue ID for deletion: " + request.getParameter("issueId"));
+            }
+            response.sendRedirect("issues"); // Redirect back to the issue list
+            return; // Important to stop further processing
+        }
+        
+        // --- Existing code for ADDING an issue ---
+        
+        // Check if action is "delete", if so, the code above would have run and returned.
+        // If not "delete" (e.g., it's null from the add form), proceed to add.
+        
         int studentId = Integer.parseInt(request.getParameter("studentId"));
         int bookId = Integer.parseInt(request.getParameter("bookId"));
         LocalDate issueDate = LocalDate.parse(request.getParameter("issueDate"));
@@ -45,7 +66,7 @@ public class IssueServlet extends HttpServlet {
         i.setIssueDate(issueDate);
         i.setDueDate(dueDate);
 
-        IssueDAO dao = new IssueDAO();
+        // dao object is already created at the top of the method
         dao.addIssue(i);
 
         // Redirect to the servlet's doGet method to display the updated list

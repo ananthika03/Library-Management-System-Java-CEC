@@ -323,6 +323,7 @@
     <h1>Student Management</h1>
 
     <div class="form-container">
+      <h2>Add New Student</h2>
       <form id="studentForm" action="students" method="post">
          <div class="form-group">
            <label for="name">Name</label>
@@ -340,12 +341,13 @@
            <label for="issuedBooks">Issued Books</label>
            <input type="number" id="issuedBooks" name="issuedBooks" placeholder="0" min="0" required>
          </div>
-         <div class="form-group" style="grid-column: 1 / -1;"> <button type="submit" class="btn btn-submit">Add Student</button>
+         <div class="form-group" style="grid-column: 1 / -1;"> <label style="opacity: 0;">Add Student</label> <button type="submit" class="btn btn-submit">Add Student</button>
          </div>
      </form>
     </div>
 
     <div class="table-container">
+      <h2>Student List</h2>
       <table id="studentTable">
         <thead>
           <tr>

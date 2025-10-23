@@ -404,7 +404,15 @@
                   <td><c:out value="${issue.bookId}"/></td>
                   <td><c:out value="${issue.issueDate}"/></td>
                   <td><c:out value="${issue.dueDate}"/></td>
-                  <td><button class="deleteBtn">Delete</button></td> </tr>
+                  <td>
+                      <form action="issues" method="post" style="display:inline;">
+                          <input type="hidden" name="action" value="delete">
+                          <input type="hidden" name="issueId" value="<c:out value='${issue.issueId}'/>">
+                          <button type="submit" class="deleteBtn"
+                                  onclick="return confirm('Are you sure you want to delete issue ID: ${issue.issueId}?');">Delete</button>
+                      </form>
+                  </td> 
+              </tr>
           </c:forEach>
           <c:if test="${empty issueList}">
                <tr><td colspan="6" style="text-align: center; color: #aaa;">No books currently issued.</td></tr>

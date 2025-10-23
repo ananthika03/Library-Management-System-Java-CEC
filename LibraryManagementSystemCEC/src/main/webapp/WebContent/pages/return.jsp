@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page isELIgnored="false" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -128,12 +129,11 @@
       position: relative;
       z-index: 2;
       flex: 1;
-      height: 100vh;
-      overflow-y: auto;
       padding: 40px;
       display: flex;
       flex-direction: column;
       gap: 25px;
+      height: 100vh;
     }
     .main-content h1 {
       font-size: 2.2rem;
@@ -252,7 +252,8 @@
       border-radius: 20px;
       border: 1px solid rgba(188, 19, 254, 0.3);
       box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
-      overflow: hidden; /* For border-radius */
+      overflow-y: auto;
+      flex: 1; /* For border-radius */
     }
     table {
       width: 100%;
