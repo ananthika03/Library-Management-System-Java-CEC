@@ -253,7 +253,8 @@
       border: 1px solid rgba(188, 19, 254, 0.3);
       box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
       overflow-y: auto;
-      flex: 1; /* For border-radius */
+      flex: 1;
+       /* For border-radius */
     }
     table {
       width: 100%;
