@@ -16,33 +16,46 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.logging.Logger;
 
+// The URL pattern for this servlet is "/issues"
 @WebServlet("/issues")
 public class IssueServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    // Logger to help with debugging in the server console
+    private static final Logger LOGGER = Logger.getLogger(IssueServlet.class.getName());
+
     private IssueDAO issueDAO = new IssueDAO();
     private BookDAO bookDAO = new BookDAO();
     private StudentDAO studentDAO = new StudentDAO();
 
     /**
-     * This method correctly fetches the list of issued books with status = 'Issued'
-     * and forwards them to the JSP page.
+     * This method is called when you visit the page. It's responsible for
+     * fetching the list of issued books from the database and displaying them.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        
+        LOGGER.info("GET request received. Fetching all issued books...");
+        
+        // Fetch the list of books with "Issued" status
         List<Issue> issues = issueDAO.getAllIssues();
-        request.setAttribute("issueList", issues); // Sets the attribute the JSP page expects
+        
+        // Set the list as an attribute that the JSP page can access
+        request.setAttribute("issueList", issues);
+        
+        LOGGER.info("Forwarding to issue.jsp with " + issues.size() + " issued books.");
 
-        // Correctly dispatches to your JSP file's location
+        // Forward the request to the JSP page to display the data
         RequestDispatcher dispatcher = request.getRequestDispatcher("/pages/issue.jsp");
         dispatcher.forward(request, response);
     }
 
     /**
-     * This method handles both adding and deleting issues.
+     * This method is called ONLY when you submit the form on the page.
+     * It handles saving the new issue to the database.
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -52,15 +65,20 @@ public class IssueServlet extends HttpServlet {
 
         // --- Handle Delete Action ---
         if ("delete".equals(action)) {
-            handleDelete(request, response);
+            try {
+                int issueId = Integer.parseInt(request.getParameter("issueId"));
+                LOGGER.info("POST request received to delete issue ID: " + issueId);
+                issueDAO.deleteIssue(issueId);
+            } catch (NumberFormatException e) {
+                LOGGER.severe("Invalid Issue ID for deletion: " + request.getParameter("issueId"));
+            }
+            // After deleting, redirect to refresh the list
+            response.sendRedirect(request.getContextPath() + "/issues");
             return;
         }
 
-        // --- Handle Add Issue Action (Default) ---
-        handleAdd(request, response);
-    }
-
-    private void handleAdd(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // --- Handle Add Issue Action ---
+        LOGGER.info("POST request received to add a new issue.");
         try {
             int studentId = Integer.parseInt(request.getParameter("studentId"));
             int bookId = Integer.parseInt(request.getParameter("bookId"));
@@ -68,46 +86,44 @@ public class IssueServlet extends HttpServlet {
             Student student = studentDAO.getStudentById(studentId);
             Book book = bookDAO.getBookById(bookId);
 
+            // Validation checks
             if (student == null || book == null) {
-                System.err.println("Attempted to issue with non-existent Student or Book ID.");
-                response.sendRedirect("issues?error=notfound");
+                LOGGER.warning("Issue failed: Student or Book not found.");
+                response.sendRedirect(request.getContextPath() + "/issues?error=notfound");
                 return;
             }
-
             if (book.getAvailableCopies() <= 0) {
-                System.err.println("Attempted to issue a book with no available copies.");
-                response.sendRedirect("issues?error=nocopies");
+                LOGGER.warning("Issue failed: No available copies for book ID " + bookId);
+                response.sendRedirect(request.getContextPath() + "/issues?error=nocopies");
                 return;
             }
 
+            // Create and save the new issue
             Issue newIssue = new Issue();
             newIssue.setStudentId(studentId);
             newIssue.setBookId(bookId);
             newIssue.setIssueDate(LocalDate.parse(request.getParameter("issueDate")));
             newIssue.setDueDate(LocalDate.parse(request.getParameter("dueDate")));
-            // The 'addIssue' method in your DAO will automatically set the status to "Issued"
             issueDAO.addIssue(newIssue);
+            LOGGER.info("Successfully saved new issue for student ID " + studentId);
 
-            // Update book and student records
+            // Update related data
             book.setAvailableCopies(book.getAvailableCopies() - 1);
             bookDAO.updateBook(book);
-
             student.setIssuedBooks(student.getIssuedBooks() + 1);
             studentDAO.updateStudent(student);
 
         } catch (Exception e) {
+            LOGGER.severe("An error occurred while adding a new issue: " + e.getMessage());
             e.printStackTrace();
         }
-        response.sendRedirect("issues");
-    }
 
-    private void handleDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try {
-            int issueId = Integer.parseInt(request.getParameter("issueId"));
-            issueDAO.deleteIssue(issueId);
-        } catch (NumberFormatException e) {
-            System.err.println("Invalid Issue ID for deletion: " + request.getParameter("issueId"));
-        }
-        response.sendRedirect("issues");
+        // **THE MOST IMPORTANT STEP**
+        // After the data is saved, we send a redirect command to the browser.
+        // This tells the browser to make a brand new GET request to the "/issues" URL.
+        // This new request will trigger the doGet method above, which fetches the
+        // complete, updated list from the database.
+        LOGGER.info("Redirecting to /issues to refresh the page.");
+        response.sendRedirect(request.getContextPath() + "/issues");
     }
 }
